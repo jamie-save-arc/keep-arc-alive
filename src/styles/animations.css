@@ -1,0 +1,261 @@
+/* Arc Browser-inspired Clean Background */
+
+.arc-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+  background: #000000;
+}
+
+/* Static center gradient for depth */
+.arc-bg__center {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 50% 50% at 50% 50%,
+    rgba(37, 99, 235, 0.06) 0%,
+    rgba(37, 99, 235, 0.03) 30%,
+    transparent 60%
+  );
+}
+
+/* Aurora base styles */
+.arc-bg__aurora {
+  position: absolute;
+  filter: blur(150px);
+  opacity: 0.25;
+  mix-blend-mode: screen;
+}
+
+/* Top aurora */
+.arc-bg__aurora--top {
+  top: -30%;
+  left: -10%;
+  right: -10%;
+  height: 60%;
+  background: linear-gradient(
+    180deg,
+    rgba(124, 58, 237, 0.25) 0%,
+    rgba(111, 58, 237, 0.23) 5%,
+    rgba(86, 69, 236, 0.20) 10%,
+    rgba(62, 80, 236, 0.18) 15%,
+    rgba(37, 99, 235, 0.16) 20%,
+    rgba(34, 115, 229, 0.14) 25%,
+    rgba(30, 131, 223, 0.12) 30%,
+    rgba(23, 148, 218, 0.10) 35%,
+    rgba(15, 165, 215, 0.08) 40%,
+    rgba(6, 182, 212, 0.06) 45%,
+    rgba(6, 182, 212, 0.04) 50%,
+    rgba(6, 182, 212, 0.02) 55%,
+    rgba(6, 182, 212, 0.01) 60%,
+    transparent 65%
+  );
+  animation: auroraWaveTop 40s ease-in-out infinite;
+}
+
+/* Right aurora */
+.arc-bg__aurora--right {
+  top: -10%;
+  right: -30%;
+  bottom: -10%;
+  width: 60%;
+  background: linear-gradient(
+    270deg,
+    rgba(236, 72, 153, 0.22) 0%,
+    rgba(218, 72, 168, 0.20) 8%,
+    rgba(199, 72, 183, 0.18) 16%,
+    rgba(180, 72, 198, 0.16) 24%,
+    rgba(161, 72, 213, 0.14) 32%,
+    rgba(142, 72, 228, 0.12) 40%,
+    rgba(124, 58, 237, 0.10) 48%,
+    rgba(80, 78, 236, 0.08) 56%,
+    rgba(37, 99, 235, 0.06) 64%,
+    rgba(37, 99, 235, 0.03) 72%,
+    transparent 80%
+  );
+  animation: auroraWaveRight 45s ease-in-out infinite;
+}
+
+/* Bottom aurora */
+.arc-bg__aurora--bottom {
+  bottom: -30%;
+  left: -10%;
+  right: -10%;
+  height: 60%;
+  background: linear-gradient(
+    0deg,
+    rgba(37, 99, 235, 0.20) 0%,
+    rgba(34, 115, 229, 0.18) 10%,
+    rgba(30, 131, 223, 0.16) 20%,
+    rgba(23, 148, 218, 0.14) 30%,
+    rgba(15, 165, 215, 0.12) 40%,
+    rgba(6, 182, 212, 0.10) 50%,
+    rgba(11, 183, 198, 0.08) 60%,
+    rgba(16, 185, 129, 0.05) 70%,
+    rgba(16, 185, 129, 0.02) 80%,
+    transparent 90%
+  );
+  animation: auroraWaveBottom 50s ease-in-out infinite;
+}
+
+/* Left aurora */
+.arc-bg__aurora--left {
+  top: -10%;
+  left: -30%;
+  bottom: -10%;
+  width: 60%;
+  background: linear-gradient(
+    90deg,
+    rgba(16, 185, 129, 0.18) 0%,
+    rgba(16, 185, 148, 0.16) 10%,
+    rgba(11, 183, 170, 0.14) 20%,
+    rgba(6, 182, 190, 0.12) 30%,
+    rgba(6, 182, 212, 0.10) 40%,
+    rgba(34, 157, 212, 0.08) 50%,
+    rgba(62, 132, 212, 0.06) 60%,
+    rgba(90, 107, 225, 0.04) 70%,
+    rgba(124, 58, 237, 0.02) 80%,
+    transparent 90%
+  );
+  animation: auroraWaveLeft 55s ease-in-out infinite;
+}
+
+/* Aurora animations - gentler movements */
+@keyframes auroraWaveTop {
+  0%, 100% {
+    transform: translateY(0) scaleX(1);
+    opacity: 0.25;
+  }
+  25% {
+    transform: translateY(5%) scaleX(1.05);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateY(-3%) scaleX(0.98);
+    opacity: 0.2;
+  }
+  75% {
+    transform: translateY(8%) scaleX(1.02);
+    opacity: 0.28;
+  }
+}
+
+@keyframes auroraWaveRight {
+  0%, 100% {
+    transform: translateX(0) scaleY(1);
+    opacity: 0.25;
+  }
+  25% {
+    transform: translateX(-5%) scaleY(1.05);
+    opacity: 0.22;
+  }
+  50% {
+    transform: translateX(3%) scaleY(0.98);
+    opacity: 0.3;
+  }
+  75% {
+    transform: translateX(-8%) scaleY(1.02);
+    opacity: 0.2;
+  }
+}
+
+@keyframes auroraWaveBottom {
+  0%, 100% {
+    transform: translateY(0) scaleX(1);
+    opacity: 0.25;
+  }
+  33% {
+    transform: translateY(-8%) scaleX(1.08);
+    opacity: 0.3;
+  }
+  66% {
+    transform: translateY(5%) scaleX(0.95);
+    opacity: 0.22;
+  }
+}
+
+@keyframes auroraWaveLeft {
+  0%, 100% {
+    transform: translateX(0) scaleY(1);
+    opacity: 0.25;
+  }
+  20% {
+    transform: translateX(5%) scaleY(0.97);
+    opacity: 0.3;
+  }
+  40% {
+    transform: translateX(-3%) scaleY(1.05);
+    opacity: 0.2;
+  }
+  60% {
+    transform: translateX(8%) scaleY(1.03);
+    opacity: 0.28;
+  }
+  80% {
+    transform: translateX(-5%) scaleY(0.98);
+    opacity: 0.22;
+  }
+}
+
+/* High-quality noise canvas */
+.arc-bg__noise {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.04;
+  mix-blend-mode: overlay;
+}
+
+/* Stats card glow animation on success */
+.arc-stats-grid--success .arc-stat-card {
+  animation: arcStatGlow 2.5s ease-out;
+}
+
+@keyframes arcStatGlow {
+  0% {
+    box-shadow: 
+      0 0 0 0 rgba(59, 130, 246, 0),
+      0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+  50% {
+    box-shadow: 
+      0 0 30px 15px rgba(59, 130, 246, 0.4),
+      0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+  100% {
+    box-shadow: 
+      0 0 0 0 rgba(59, 130, 246, 0),
+      0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.arc-stats-grid--success .arc-stat-card:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.arc-stats-grid--success .arc-stat-card:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.arc-stats-grid--success .arc-stat-card:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+.arc-stats-grid--success .arc-stat-card:nth-child(4) {
+  animation-delay: 0.3s;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .arc-bg__aurora,
+  .arc-bg__aurora--top,
+  .arc-bg__aurora--right,
+  .arc-bg__aurora--bottom,
+  .arc-bg__aurora--left,
+  .arc-stats-grid--success .arc-stat-card {
+    animation: none;
+  }
+}
