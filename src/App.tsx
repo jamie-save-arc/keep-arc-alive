@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Users, DollarSign, TrendingUp, Sparkles } from 'lucide-react';
-import { supabase, type Pledge } from './lib/supabase';
+import { supabase } from './lib/supabase';
+import { useRealtimeStats } from './hooks/useRealtimeStats';
+import { useRealtimePledges } from './hooks/useRealtimePledges';
 import AnimatedBackground from './components/AnimatedBackground';
 import RoundBadge from './components/RoundBadge';
 import StatsCard from './components/StatsCard';
@@ -10,8 +12,12 @@ import './styles/arc-design-system.css';
 import { playSuccessSound } from './utils/sound';
 
 function App() {
-  const [pledges, setPledges] = useState<Pledge[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Use custom hooks for real-time data
+  const { stats, loading: statsLoading } = useRealtimeStats();
+  const { pledges, loading: pledgesLoading } = useRealtimePledges();
+  
+  const loading = statsLoading || pledgesLoading;
+  
   const [name, setName] = useState('');
   const [monthlyAmount, setMonthlyAmount] = useState('12');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -19,31 +25,6 @@ function App() {
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [triggerBadgeSpin, setTriggerBadgeSpin] = useState(false);
-
-  // Load pledges from Supabase on mount
-  useEffect(() => {
-    loadPledges();
-  }, []);
-
-  const loadPledges = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('pledges')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error loading pledges:', error);
-        return;
-      }
-
-      setPledges(data || []);
-    } catch (error) {
-      console.error('Error loading pledges:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Scroll to top on page load/reload
   useEffect(() => {
@@ -87,8 +68,8 @@ function App() {
         return;
       }
 
-      // Add the new pledge to the beginning of the list
-      setPledges(prev => [data, ...prev]);
+      // Real-time subscription will automatically update the UI
+      // No need to manually update state here
       
       setName('');
       setMonthlyAmount('12');
@@ -119,11 +100,6 @@ function App() {
       setIsSubmitting(false);
     }
   };
-
-  const totalSignups = pledges.length;
-  const expectedMRR = pledges.reduce((sum, pledge) => sum + pledge.monthly_amount, 0);
-  const averageSubscription = totalSignups > 0 ? expectedMRR / totalSignups : 0;
-  const expectedARR = expectedMRR * 12;
 
   if (loading) {
     return (
@@ -167,22 +143,22 @@ function App() {
           <StatsCard
             icon={Users}
             label="Pledged Users"
-            value={totalSignups.toLocaleString()}
+            value={stats.totalSignups.toLocaleString()}
           />
           <StatsCard
             icon={DollarSign}
             label="Price Suggestion"
-            value={`$${averageSubscription.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+            value={`$${stats.averageSubscription.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           />
           <StatsCard
             icon={TrendingUp}
             label="Projected MRR"
-            value={`$${expectedMRR.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+            value={`$${stats.expectedMRR.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
           />
           <StatsCard
             icon={Sparkles}
             label="Projected ARR"
-            value={`$${expectedARR.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+            value={`$${stats.expectedARR.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
           />
         </section>
 
