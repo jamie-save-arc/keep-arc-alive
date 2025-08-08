@@ -67,6 +67,7 @@ const ResultsCard: React.FC<ResultsCardProps> = () => {
   const [timeFrame, setTimeFrame] = useState<'7d' | '30d' | '90d'>('30d');
   const [showBanner, setShowBanner] = useState(true);
   const [isAnimatingOut, setIsAnimatingOut] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   
   const getDays = (frame: string) => {
     switch (frame) {
@@ -139,10 +140,19 @@ const ResultsCard: React.FC<ResultsCardProps> = () => {
       // Sort in ascending order for proper display
       tickIndices.sort((a, b) => a - b);
     } else { // 90d => 12 weeks
-      // Weekly ticks from -84 to 0 days (13 markers)
-      for (let delta = 84; delta >= 0; delta -= 7) {
-        const idx = length - 1 - delta;
-        if (idx >= 0) tickIndices.push(idx);
+      // On mobile, show fewer ticks for 90d view
+      if (isMobile) {
+        // Show ticks every 3 weeks (21 days) on mobile - about 5 labels total
+        for (let delta = 84; delta >= 0; delta -= 21) {
+          const idx = length - 1 - delta;
+          if (idx >= 0) tickIndices.push(idx);
+        }
+      } else {
+        // Weekly ticks from -84 to 0 days (13 markers) on desktop
+        for (let delta = 84; delta >= 0; delta -= 7) {
+          const idx = length - 1 - delta;
+          if (idx >= 0) tickIndices.push(idx);
+        }
       }
     }
     
@@ -191,6 +201,18 @@ const ResultsCard: React.FC<ResultsCardProps> = () => {
     return () => clearTimeout(timer);
   }, []);
   
+  // Handle responsive state
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  
   return (
     <div className="arc-results-card arc-results-card--full-width">
       {showBanner && (
@@ -216,8 +238,13 @@ const ResultsCard: React.FC<ResultsCardProps> = () => {
         </div>
         
         <div className="arc-results-chart arc-results-chart--anim">
-          <ResponsiveContainer width="100%" height={320}>
-            <LineChart data={chartData} margin={{ top: 24, right: 24, left: 16, bottom: 24 }}>
+          <ResponsiveContainer width="100%" height={isMobile ? 280 : 320}>
+            <LineChart data={chartData} margin={{ 
+              top: isMobile ? 16 : 24, 
+              right: isMobile ? 20 : 24, 
+              left: isMobile ? 8 : 16, 
+              bottom: isMobile ? 16 : 24 
+            }}>
               <XAxis 
                 dataKey="date" 
                 axisLine={false}
