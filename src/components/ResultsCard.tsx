@@ -2,15 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid, ReferenceLine } from 'recharts';
 import ConfirmationBanner from './ConfirmationBanner';
 
-interface Signup {
-  id: string;
-  name: string;
-  monthlyAmount: number;
-  timestamp: number;
-}
+import type { Pledge } from '../lib/supabase';
 
 interface ResultsCardProps {
-  signups: Signup[];
+  pledges: Pledge[];
 }
 
 // Generate demo data for realistic growth curve
@@ -63,7 +58,7 @@ const generateDemoData = (days: number) => {
   return data;
 };
 
-const ResultsCard: React.FC<ResultsCardProps> = () => {
+const ResultsCard: React.FC<ResultsCardProps> = ({ pledges }) => {
   const [timeFrame, setTimeFrame] = useState<'7d' | '30d' | '90d'>('30d');
   const [showBanner, setShowBanner] = useState(true);
   const [isAnimatingOut, setIsAnimatingOut] = useState(false);

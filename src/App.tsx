@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Users, DollarSign, TrendingUp, Sparkles } from 'lucide-react';
+import { supabase, type Pledge } from './lib/supabase';
 import AnimatedBackground from './components/AnimatedBackground';
 import RoundBadge from './components/RoundBadge';
 import StatsCard from './components/StatsCard';
@@ -8,15 +9,9 @@ import ResultsCard from './components/ResultsCard';
 import './styles/arc-design-system.css';
 import { playSuccessSound } from './utils/sound';
 
-interface Signup {
-  id: string;
-  name: string;
-  monthlyAmount: number;
-  timestamp: number;
-}
-
 function App() {
-  const [signups, setSignups] = useState<Signup[]>([]);
+  const [pledges, setPledges] = useState<Pledge[]>([]);
+  const [loading, setLoading] = useState(true);
   const [name, setName] = useState('');
   const [monthlyAmount, setMonthlyAmount] = useState('12');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -25,13 +20,30 @@ function App() {
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [triggerBadgeSpin, setTriggerBadgeSpin] = useState(false);
 
-  // Load signups and submission status from localStorage on mount
+  // Load pledges from Supabase on mount
   useEffect(() => {
-    const saved = localStorage.getItem('arc-petition-signups');
-    if (saved) {
-      setSignups(JSON.parse(saved));
-    }
+    loadPledges();
   }, []);
+
+  const loadPledges = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('pledges')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error loading pledges:', error);
+        return;
+      }
+
+      setPledges(data || []);
+    } catch (error) {
+      console.error('Error loading pledges:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Scroll to top on page load/reload
   useEffect(() => {
@@ -51,60 +63,86 @@ function App() {
     return () => clearTimeout(timeoutId);
   }, []);
 
-  // Save to localStorage whenever signups change
-  useEffect(() => {
-    localStorage.setItem('arc-petition-signups', JSON.stringify(signups));
-  }, [signups]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !monthlyAmount || parseFloat(monthlyAmount) <= 0 || hasSubmitted) return;
 
     setIsSubmitting(true);
     
-    // Simulate network delay for better UX
-    await new Promise(resolve => setTimeout(resolve, 800));
+    try {
+      const { data, error } = await supabase
+        .from('pledges')
+        .insert([
+          {
+            name: name.trim(),
+            monthly_amount: parseFloat(monthlyAmount)
+          }
+        ])
+        .select()
+        .single();
 
-    const newSignup: Signup = {
-      id: Date.now().toString(),
-      name: name.trim(),
-      monthlyAmount: parseFloat(monthlyAmount),
-      timestamp: Date.now()
-    };
+      if (error) {
+        console.error('Error submitting pledge:', error);
+        alert('There was an error submitting your pledge. Please try again.');
+        return;
+      }
 
-    setSignups(prev => [...prev, newSignup]);
-    setName('');
-    setMonthlyAmount('12');
-    setIsSubmitting(false);
-    setShowSuccess(true);
-    setShowSuccessAnimation(true);
-    setHasSubmitted(true);
-    
-    // Trigger badge spin animation with slight delay for smoother start
-    setTimeout(() => {
-      setTriggerBadgeSpin(true);
-    }, 50);
-    
-    // Do not persist submission lock to allow resubmits after refresh during testing
+      // Add the new pledge to the beginning of the list
+      setPledges(prev => [data, ...prev]);
+      
+      setName('');
+      setMonthlyAmount('12');
+      setShowSuccess(true);
+      setShowSuccessAnimation(true);
+      setHasSubmitted(true);
+      
+      // Trigger badge spin animation with slight delay for smoother start
+      setTimeout(() => {
+        setTriggerBadgeSpin(true);
+      }, 50);
+      
+      // Subtle success chime
+      playSuccessSound();
+      // Stop badge spin after 2 seconds (plus the 50ms delay)
+      setTimeout(() => {
+        setTriggerBadgeSpin(false);
+      }, 2050);
 
-    // Subtle success chime
-    playSuccessSound();
-
-    // Stop badge spin after 2 seconds (plus the 50ms delay)
-    setTimeout(() => {
-      setTriggerBadgeSpin(false);
-    }, 2050);
-
-    setTimeout(() => {
-      setShowSuccess(false);
-      setShowSuccessAnimation(false);
-    }, 3000);
+      setTimeout(() => {
+        setShowSuccess(false);
+        setShowSuccessAnimation(false);
+      }, 3000);
+    } catch (error) {
+      console.error('Error submitting pledge:', error);
+      alert('There was an error submitting your pledge. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const totalSignups = signups.length;
-  const expectedMRR = signups.reduce((sum, signup) => sum + signup.monthlyAmount, 0);
+  const totalSignups = pledges.length;
+  const expectedMRR = pledges.reduce((sum, pledge) => sum + pledge.monthly_amount, 0);
   const averageSubscription = totalSignups > 0 ? expectedMRR / totalSignups : 0;
   const expectedARR = expectedMRR * 12;
+
+  if (loading) {
+    return (
+      <div className="arc-app">
+        <AnimatedBackground />
+        <div className="arc-container">
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            minHeight: '50vh',
+            color: 'var(--arc-text-secondary)'
+          }}>
+            Loading...
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="arc-app">
@@ -150,7 +188,7 @@ function App() {
 
         {/* Main Form or Results */}
         {hasSubmitted ? (
-          <ResultsCard signups={signups} />
+          <ResultsCard pledges={pledges} />
         ) : (
           <SignupForm
             name={name}
@@ -162,8 +200,6 @@ function App() {
             onSubmit={handleSubmit}
           />
         )}
-
-        {/* Recent Signups removed by request */}
 
         {/* Footer */}
         <footer className="arc-footer">
